@@ -1,0 +1,12 @@
+{
+  "name": "walmart-api-crawler",
+  "version": "1.0.0",
+  "description": "Crawl Walmart Marketplace API documentation",
+  "main": "crawler.mjs",
+  "scripts": {
+    "start": "node crawler.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
