@@ -20,6 +20,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ProxyAgent } from "undici";
 import * as cheerio from "cheerio";
 
 // ── 路径 ──────────────────────────────────────────────
@@ -34,6 +35,21 @@ const DOC_BASE = "/us-marketplace/docs/";
 const ENTRY_SLUG = "introduction-to-marketplace-apis";
 const MAX_RETRIES = 3;
 
+// ── 代理（在 main 中根据参数和环境变量初始化）────────────
+let dispatcher = undefined;
+let proxyUrl = undefined;
+
+function initProxy(argsProxy) {
+  proxyUrl = argsProxy
+    || process.env.HTTPS_PROXY
+    || process.env.https_proxy
+    || process.env.HTTP_PROXY
+    || process.env.http_proxy;
+  if (proxyUrl) {
+    dispatcher = new ProxyAgent(proxyUrl);
+  }
+}
+
 // ── 参数解析 ──────────────────────────────────────────
 function parseArgs(argv) {
   const args = {
@@ -43,6 +59,7 @@ function parseArgs(argv) {
     outputDir: DEFAULT_OUTPUT,
     slugs: null,
     delay: 200,
+    proxy: null,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -65,6 +82,9 @@ function parseArgs(argv) {
       case "--delay":
         args.delay = parseInt(argv[++i], 10);
         break;
+      case "--proxy":
+        args.proxy = argv[++i];
+        break;
     }
   }
   return args;
@@ -77,7 +97,7 @@ async function fetchWithRetry(url, retries = 0) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
   try {
-    const res = await fetch(url, {
+    const fetchOpts = {
       signal: controller.signal,
       headers: {
         "User-Agent":
@@ -85,7 +105,9 @@ async function fetchWithRetry(url, retries = 0) {
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
       },
-    });
+    };
+    if (dispatcher) fetchOpts.dispatcher = dispatcher;
+    const res = await fetch(url, fetchOpts);
     clearTimeout(timer);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.text();
@@ -240,8 +262,13 @@ async function crawlPage(slug, outputDir) {
 async function main() {
   const args = parseArgs(process.argv);
 
+  // 初始化代理
+  initProxy(args.proxy);
+
   console.log("🚀 Walmart API 文档爬虫\n");
-  console.log(`  并发: ${args.concurrency}  延迟: ${args.delay}ms  输出: ${args.outputDir}\n`);
+  console.log(`  并发: ${args.concurrency}  延迟: ${args.delay}ms  输出: ${args.outputDir}`);
+  if (dispatcher) console.log(`  🔀 使用代理: ${proxyUrl}`);
+  console.log();
 
   // 创建输出目录
   for (const d of ["json", "markdown", "html"]) {

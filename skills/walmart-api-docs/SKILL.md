@@ -88,6 +88,10 @@ node skills/walmart-api-docs/scripts/crawl.mjs --slugs "get-an-access-token,retr
 # 调整并发和延迟
 node skills/walmart-api-docs/scripts/crawl.mjs --concurrency 2 --delay 500
 
+# 使用代理
+node skills/walmart-api-docs/scripts/crawl.mjs --proxy http://localhost:4444
+HTTPS_PROXY=http://localhost:4444 node skills/walmart-api-docs/scripts/crawl.mjs
+
 # 指定输出目录
 node skills/walmart-api-docs/scripts/crawl.mjs --output-dir ./output
 ```
