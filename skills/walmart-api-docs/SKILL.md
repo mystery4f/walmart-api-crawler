@@ -22,19 +22,40 @@ npm install
 | 脚本 | 路径 |
 |------|------|
 | 爬取/更新 | `skills/walmart-api-docs/scripts/crawl.mjs` |
+| 构建数据库 | `skills/walmart-api-docs/scripts/build-db.mjs` |
 | 搜索文档 | `skills/walmart-api-docs/scripts/search.mjs` |
 
 路径均相对于项目根目录。安装为 pi package 后，脚本在 package 根目录下执行。
+
+## SQLite 数据库（搜索加速）
+
+爬虫生成 JSON 文件后，运行 `build-db.mjs` 构建 SQLite 数据库（含 FTS5 全文索引）：
+
+```bash
+node skills/walmart-api-docs/scripts/build-db.mjs         # 构建
+node skills/walmart-api-docs/scripts/build-db.mjs --verbose # 看进度
+```
+
+构建后 `search.mjs` 自动使用 SQLite，搜索速度从加载 388 个 JSON 文件（~秒级）降到 ~10ms。
+
+爬取后或怀疑数据过时时重新构建：
+
+```bash
+node skills/walmart-api-docs/scripts/crawl.mjs     # 先爬最新文档
+node skills/walmart-api-docs/scripts/build-db.mjs  # 再重构建数据库
+```
+
+数据库文件：`output/walmart-api.db`（~6 MB，单文件，零配置）
 
 ## 搜索文档
 
 用户询问 Walmart API 相关问题时，先用搜索脚本查找相关文档，再阅读详情回答。
 
 ```bash
-# 关键词搜索（在标题+内容中搜索）
+# 关键词搜索（FTS5 全文搜索，默认模式）
 node skills/walmart-api-docs/scripts/search.mjs "order management"
 
-# 搜索 API 端点
+# 搜索 API 端点（自动解析 HTTP 方法 + URL）
 node skills/walmart-api-docs/scripts/search.mjs "GET /v3/orders" --mode endpoint
 
 # 按模块分类浏览
@@ -45,17 +66,34 @@ node skills/walmart-api-docs/scripts/search.mjs --mode list
 
 # 查看爬取统计
 node skills/walmart-api-docs/scripts/search.mjs --mode stats
+
+# 直接跑 SQL 查询（进阶）
+node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT title, category FROM pages WHERE category = 'Inventory'"
 ```
+
+**FTS5 全文搜索语法:**
+
+| 语法 | 示例 | 说明 |
+|------|------|------|
+| 单个词 | `inventory` | 匹配包含 inventory 的页面 |
+| 精确短语 | `"order management"` | 匹配完整短语 |
+| 前缀匹配 | `invent*` | 匹配 invent 开头的词（inventory, inventories...） |
+| 与逻辑 | `inventory AND pricing` | 同时包含（默认） |
+| 或逻辑 | `inventory OR pricing` | 包含任一 |
+| 排除 | `inventory NOT returns` | 包含 inventory 但不含 returns |
+| 分组 | `(orders AND refunds) OR returns` | 组合条件 |
+| Porter 词干 | 自动 | "inventorying" 也能匹配 "inventory" |
 
 **搜索模式:**
 
 | 模式 | 说明 |
 |------|------|
-| `keyword` (默认) | 在标题和正文中搜索关键词，按相关度排序 |
-| `endpoint` | 搜索 API 端点 (HTTP 方法 + URL) |
+| `keyword` (默认) | FTS5 全文搜索 + BM25 相关度排序（快且准） |
+| `endpoint` | 搜索 API 端点，支持 `GET /v3/orders` 格式自动解析 |
 | `category` | 按功能模块分类浏览 |
 | `list` | 列出所有模块及页面数 |
 | `stats` | 显示爬取统计信息 |
+| `sql` | 直接执行 SQL 查询（进阶用途） |
 
 **搜索结果后读取完整内容:**
 
@@ -64,6 +102,12 @@ node skills/walmart-api-docs/scripts/search.mjs --mode stats
 ```bash
 # 例: 搜索到 order-management-api-overview 后
 cat output/json/order-management-api-overview.json
+```
+
+或者直接 SQL 查询：
+
+```bash
+node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT slug, title FROM pages WHERE category = 'Orders'"
 ```
 
 ## 更新文档（重新爬取）
@@ -129,24 +173,38 @@ output/
 ### 搜索类请求
 
 1. 分析用户问题，提取关键词
-2. 运行 `node skills/walmart-api-docs/scripts/search.mjs "<关键词>"` 搜索
+2. 运行 `node skills/walmart-api-docs/scripts/search.mjs "<关键词>"` 搜索（自动用 SQLite）
 3. 如果搜到匹配的页面，读取对应 JSON 文件获取完整内容
 4. 基于文档内容回答用户问题
 5. 如有必要，用 `--mode endpoint` 补充搜索相关 API 端点
 
 ### 更新类请求
 
-1. 运行爬取脚本（直连即可，约 63 秒完成）
+1. 运行爬取脚本: `node skills/walmart-api-docs/scripts/crawl.mjs`
 2. 直连不通时加 `--proxy "http://localhost:4444"`
-3. 如遇性能问题，加 `--debug` 查看瓶颈
-4. 爬取完成后报告统计结果
-5. 如有失败页面，告知用户并可重试
+3. 爬取完成后，运行 `node skills/walmart-api-docs/scripts/build-db.mjs` 重建数据库
+4. 报告统计结果（如有失败页面，告知用户并可重试）
 
 ### 分类浏览请求
 
 1. 运行 `node skills/walmart-api-docs/scripts/search.mjs --mode list` 查看所有模块
 2. 用户指定模块后，用 `--mode category "<模块名>"` 查看详情
 3. 读取感兴趣的页面 JSON 文件
+
+### SQL 查询（进阶）
+
+```bash
+# 查某个分类下的所有页面
+node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT title, slug FROM pages WHERE category = 'Orders' ORDER BY title"
+
+# 查端点统计
+node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT method, COUNT(*) AS cnt FROM endpoints GROUP BY method ORDER BY cnt DESC"
+
+# 查端点最多的页面 Top 5
+node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT title, json_array_length(endpoints_json) AS ep_count FROM pages WHERE endpoints_json IS NOT NULL ORDER BY ep_count DESC LIMIT 5"
+
+# 组合查询：找到某个端点的所有页面
+node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT pages.title, pages.slug FROM endpoints JOIN pages ON pages.slug = endpoints.page_slug WHERE endpoints.url LIKE '%/v3/orders%'"
 
 ## 安装
 
