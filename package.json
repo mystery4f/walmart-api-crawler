@@ -2,15 +2,22 @@
   "name": "walmart-api-crawler",
   "version": "1.0.0",
   "description": "Crawl and search Walmart Marketplace API documentation",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "main": "skills/walmart-api-docs/scripts/crawl.mjs",
   "scripts": {
     "start": "node skills/walmart-api-docs/scripts/crawl.mjs"
   },
   "pi": {
-    "skills": ["./skills"]
+    "skills": [
+      "./skills"
+    ]
   },
   "dependencies": {
-    "cheerio": "^1.0.0"
+    "axios": "^1.16.1",
+    "cheerio": "^1.0.0",
+    "https-proxy-agent": "^9.0.0",
+    "socks-proxy-agent": "^10.0.0"
   }
 }

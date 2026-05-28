@@ -70,30 +70,31 @@ cat output/json/order-management-api-overview.json
 
 **重要：侧边栏链接每次都动态获取，不写死。** 爬虫会先访问入口页面，实时从 DOM 中提取所有侧边栏链接，然后逐页爬取。
 
+默认并发 50，约 1 分钟完成 388 页。
+
 ```bash
-# 全量更新（推荐）
+# 全量爬取（直连，推荐）
 node skills/walmart-api-docs/scripts/crawl.mjs
+
+# debug 模式：打印每页耗时、性能瓶颈分析
+node skills/walmart-api-docs/scripts/crawl.mjs --debug
 
 # 仅查看当前侧边栏有哪些页面（不爬取）
 node skills/walmart-api-docs/scripts/crawl.mjs --dry-run
 
-# 只更新特定模块的页面（按 slug 过滤）
+# 只更新特定模块的页面
 node skills/walmart-api-docs/scripts/crawl.mjs --filter inventory
 node skills/walmart-api-docs/scripts/crawl.mjs --filter order
-node skills/walmart-api-docs/scripts/crawl.mjs --filter pricing
 
 # 爬取指定 slug 列表
 node skills/walmart-api-docs/scripts/crawl.mjs --slugs "get-an-access-token,retrieve-access-token-details"
 
-# 调整并发和延迟
-node skills/walmart-api-docs/scripts/crawl.mjs --concurrency 2 --delay 500
+# 调整并发（默认 50）
+node skills/walmart-api-docs/scripts/crawl.mjs --concurrency 20
 
-# 使用代理
-node skills/walmart-api-docs/scripts/crawl.mjs --proxy http://localhost:4444
-HTTPS_PROXY=http://localhost:4444 node skills/walmart-api-docs/scripts/crawl.mjs
-
-# 指定输出目录
-node skills/walmart-api-docs/scripts/crawl.mjs --output-dir ./output
+# 使用代理（直连不通时）
+node skills/walmart-api-docs/scripts/crawl.mjs --proxy "http://localhost:4444"
+node skills/walmart-api-docs/scripts/crawl.mjs --proxy "socks5://localhost:1080"
 ```
 
 **更新流程:**
@@ -101,7 +102,7 @@ node skills/walmart-api-docs/scripts/crawl.mjs --output-dir ./output
 1. 访问入口页面 `introduction-to-marketplace-apis`
 2. 从页面 DOM 中动态提取 `#hub-sidebar a[href]` 所有链接
 3. 去重得到完整的 slug 列表
-4. 按并发配置分批爬取每个页面
+4. 50 并发分批爬取每个页面
 5. 提取标题、正文、API 端点、代码示例
 6. 保存到 `output/json/`、`output/markdown/`、`output/html/`
 7. 生成 `output/summary.json` 汇总
@@ -135,10 +136,11 @@ output/
 
 ### 更新类请求
 
-1. 先用 `--dry-run` 查看当前侧边栏页面数量
-2. 运行全量或增量爬取
-3. 爬取完成后报告统计结果
-4. 如有失败页面，告知用户并可重试
+1. 运行爬取脚本（直连即可，约 63 秒完成）
+2. 直连不通时加 `--proxy "http://localhost:4444"`
+3. 如遇性能问题，加 `--debug` 查看瓶颈
+4. 爬取完成后报告统计结果
+5. 如有失败页面，告知用户并可重试
 
 ### 分类浏览请求
 
