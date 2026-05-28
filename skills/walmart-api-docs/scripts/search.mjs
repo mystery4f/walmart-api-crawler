@@ -21,7 +21,8 @@ import { fileURLToPath } from "node:url";
 // ── 路径 ──────────────────────────────────────────────
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // __dirname = .pi/skills/walmart-api-docs/scripts  → 项目根需要向上 4 级
-const DEFAULT_OUTPUT = path.resolve(__dirname, "..", "..", "..", "..", "output");
+// 默认从 cwd/output 读取数据（支持 pi install 后在任意项目使用）
+const DEFAULT_OUTPUT = path.resolve(process.cwd(), "output");
 
 // ── 参数解析 ──────────────────────────────────────────
 function parseArgs(argv) {

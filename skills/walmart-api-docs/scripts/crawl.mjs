@@ -25,8 +25,8 @@ import * as cheerio from "cheerio";
 // ── 路径 ──────────────────────────────────────────────
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // __dirname = .pi/skills/walmart-api-docs/scripts  → 项目根需要向上 4 级
-const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..", "..");
-const DEFAULT_OUTPUT = path.join(PROJECT_ROOT, "output");
+// 默认输出到 cwd 下的 output（支持 pi install 后在任意项目使用）
+const DEFAULT_OUTPUT = path.resolve(process.cwd(), "output");
 
 // ── 配置 ──────────────────────────────────────────────
 const BASE_URL = "https://developer.walmart.com";

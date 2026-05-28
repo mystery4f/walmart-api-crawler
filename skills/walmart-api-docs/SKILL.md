@@ -7,25 +7,24 @@ description: 搜索和更新 Walmart Marketplace API 文档。当用户询问 Wa
 
 管理 Walmart 开发者文档的爬取、搜索和查阅。
 
-项目目录: `D:/Documents/work/code/walmart-api-crawler`
-数据目录: `D:/Documents/work/code/walmart-api-crawler/output`
+数据目录: `./output`（相对于当前工作目录）
 
 ## 前置条件
 
 首次使用前安装依赖:
 
 ```bash
-cd D:/Documents/work/code/walmart-api-crawler && npm install
+npm install
 ```
 
 ## 核心脚本
 
 | 脚本 | 路径 |
 |------|------|
-| 爬取/更新 | `scripts/crawl.mjs` |
-| 搜索文档 | `scripts/search.mjs` |
+| 爬取/更新 | `skills/walmart-api-docs/scripts/crawl.mjs` |
+| 搜索文档 | `skills/walmart-api-docs/scripts/search.mjs` |
 
-脚本路径均相对于 skill 目录: `D:/Documents/work/code/walmart-api-crawler/.pi/skills/walmart-api-docs/`
+路径均相对于项目根目录。安装为 pi package 后，脚本在 package 根目录下执行。
 
 ## 搜索文档
 
@@ -33,19 +32,19 @@ cd D:/Documents/work/code/walmart-api-crawler && npm install
 
 ```bash
 # 关键词搜索（在标题+内容中搜索）
-node scripts/search.mjs "order management"
+node skills/walmart-api-docs/scripts/search.mjs "order management"
 
 # 搜索 API 端点
-node scripts/search.mjs "GET /v3/orders" --mode endpoint
+node skills/walmart-api-docs/scripts/search.mjs "GET /v3/orders" --mode endpoint
 
 # 按模块分类浏览
-node scripts/search.mjs "inventory" --mode category
+node skills/walmart-api-docs/scripts/search.mjs "inventory" --mode category
 
 # 列出所有模块
-node scripts/search.mjs --mode list
+node skills/walmart-api-docs/scripts/search.mjs --mode list
 
 # 查看爬取统计
-node scripts/search.mjs --mode stats
+node skills/walmart-api-docs/scripts/search.mjs --mode stats
 ```
 
 **搜索模式:**
@@ -60,11 +59,11 @@ node scripts/search.mjs --mode stats
 
 **搜索结果后读取完整内容:**
 
-搜索结果会给出 slug，完整 JSON 在 `output/json/<slug>.json`，完整 Markdown 在 `output/markdown/<slug>.json`。
+搜索结果会给出 slug，完整 JSON 在 `output/json/<slug>.json`。
 
 ```bash
 # 例: 搜索到 order-management-api-overview 后
-cat D:/Documents/work/code/walmart-api-crawler/output/json/order-management-api-overview.json
+cat output/json/order-management-api-overview.json
 ```
 
 ## 更新文档（重新爬取）
@@ -73,24 +72,24 @@ cat D:/Documents/work/code/walmart-api-crawler/output/json/order-management-api-
 
 ```bash
 # 全量更新（推荐）
-node scripts/crawl.mjs
+node skills/walmart-api-docs/scripts/crawl.mjs
 
 # 仅查看当前侧边栏有哪些页面（不爬取）
-node scripts/crawl.mjs --dry-run
+node skills/walmart-api-docs/scripts/crawl.mjs --dry-run
 
 # 只更新特定模块的页面（按 slug 过滤）
-node scripts/crawl.mjs --filter inventory
-node scripts/crawl.mjs --filter order
-node scripts/crawl.mjs --filter pricing
+node skills/walmart-api-docs/scripts/crawl.mjs --filter inventory
+node skills/walmart-api-docs/scripts/crawl.mjs --filter order
+node skills/walmart-api-docs/scripts/crawl.mjs --filter pricing
 
 # 爬取指定 slug 列表
-node scripts/crawl.mjs --slugs "get-an-access-token,retrieve-access-token-details"
+node skills/walmart-api-docs/scripts/crawl.mjs --slugs "get-an-access-token,retrieve-access-token-details"
 
 # 调整并发和延迟
-node scripts/crawl.mjs --concurrency 2 --delay 500
+node skills/walmart-api-docs/scripts/crawl.mjs --concurrency 2 --delay 500
 
 # 指定输出目录
-node scripts/crawl.mjs --output-dir ./output
+node skills/walmart-api-docs/scripts/crawl.mjs --output-dir ./output
 ```
 
 **更新流程:**
@@ -125,7 +124,7 @@ output/
 ### 搜索类请求
 
 1. 分析用户问题，提取关键词
-2. 运行 `node scripts/search.mjs "<关键词>"` 搜索
+2. 运行 `node skills/walmart-api-docs/scripts/search.mjs "<关键词>"` 搜索
 3. 如果搜到匹配的页面，读取对应 JSON 文件获取完整内容
 4. 基于文档内容回答用户问题
 5. 如有必要，用 `--mode endpoint` 补充搜索相关 API 端点
@@ -139,6 +138,16 @@ output/
 
 ### 分类浏览请求
 
-1. 运行 `node scripts/search.mjs --mode list` 查看所有模块
+1. 运行 `node skills/walmart-api-docs/scripts/search.mjs --mode list` 查看所有模块
 2. 用户指定模块后，用 `--mode category "<模块名>"` 查看详情
 3. 读取感兴趣的页面 JSON 文件
+
+## 安装
+
+```bash
+# 从 GitHub 安装为 pi package
+pi install git:github.com/mystery4f/walmart-api-crawler
+
+# 或
+pi install https://github.com/mystery4f/walmart-api-crawler
+```

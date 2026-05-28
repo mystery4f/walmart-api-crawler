@@ -1,10 +1,14 @@
 {
   "name": "walmart-api-crawler",
   "version": "1.0.0",
-  "description": "Crawl Walmart Marketplace API documentation",
-  "main": "crawler.mjs",
+  "description": "Crawl and search Walmart Marketplace API documentation",
+  "keywords": ["pi-package"],
+  "main": "skills/walmart-api-docs/scripts/crawl.mjs",
   "scripts": {
-    "start": "node crawler.mjs"
+    "start": "node skills/walmart-api-docs/scripts/crawl.mjs"
+  },
+  "pi": {
+    "skills": ["./skills"]
   },
   "dependencies": {
     "cheerio": "^1.0.0"
