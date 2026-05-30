@@ -26,6 +26,7 @@
  */
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -33,8 +34,7 @@ import { createRequire } from "node:module";
 const _require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..");
-const DEFAULT_OUTPUT = path.join(PROJECT_ROOT, "output");
+const DEFAULT_OUTPUT = path.join(os.homedir(), "crawl", "walmart");
 
 // ── 参数解析 ──────────────────────────────────────────
 function parseArgs(argv) {

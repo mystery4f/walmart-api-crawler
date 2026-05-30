@@ -1,4 +1,11 @@
 node_modules/
 output/
+json/
+html/
+markdown/
+proxy-cache/
+walmart-api.db*
+link-index.json
+summary.json
 .playwright-mcp/
 *.log

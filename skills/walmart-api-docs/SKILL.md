@@ -7,7 +7,7 @@ description: 搜索和更新 Walmart Marketplace API 文档。当用户询问 Wa
 
 管理 Walmart 开发者文档的爬取、搜索和查阅。
 
-数据目录: `./output`（相对于当前工作目录）
+数据目录: `~/crawl/walmart/`（通过 `os.homedir()` 定位，也可用 `--output-dir` 覆盖）
 
 ## 前置条件
 
@@ -25,7 +25,7 @@ npm install
 | 构建数据库 | `skills/walmart-api-docs/scripts/build-db.mjs` |
 | 搜索文档 | `skills/walmart-api-docs/scripts/search.mjs` |
 
-路径均相对于项目根目录。安装为 pi package 后，脚本在 package 根目录下执行。
+路径均相对于项目根目录。在任何目录下执行均可，输出数据固定写入 `~/crawl/walmart/`。
 
 ## SQLite 数据库（搜索加速）
 
@@ -45,7 +45,7 @@ node skills/walmart-api-docs/scripts/crawl.mjs     # 先爬最新文档
 node skills/walmart-api-docs/scripts/build-db.mjs  # 再重构建数据库
 ```
 
-数据库文件：`output/walmart-api.db`（~6 MB，单文件，零配置）
+数据库文件：`~/crawl/walmart/walmart-api.db`（~6 MB，单文件，零配置）
 
 ## 搜索文档
 
@@ -97,11 +97,11 @@ node skills/walmart-api-docs/scripts/search.mjs --mode sql "SELECT title, catego
 
 **搜索结果后读取完整内容:**
 
-搜索结果会给出 slug，完整 JSON 在 `output/json/<slug>.json`。
+搜索结果会给出 slug，完整 JSON 在 `~/crawl/walmart/json/<slug>.json`。
 
 ```bash
 # 例: 搜索到 order-management-api-overview 后
-cat output/json/order-management-api-overview.json
+cat ~/crawl/walmart/json/order-management-api-overview.json
 ```
 
 或者直接 SQL 查询：
@@ -148,8 +148,8 @@ node skills/walmart-api-docs/scripts/crawl.mjs --proxy "socks5://localhost:1080"
 3. 去重得到完整的 slug 列表
 4. 50 并发分批爬取每个页面
 5. 提取标题、正文、API 端点、代码示例
-6. 保存到 `output/json/`、`output/markdown/`、`output/html/`
-7. 生成 `output/summary.json` 汇总
+6. 保存到 `~/crawl/walmart/json/`、`~/crawl/walmart/markdown/`、`~/crawl/walmart/html/`
+7. 生成 `~/crawl/walmart/summary.json` 汇总
 
 **何时需要更新:**
 - 用户明确要求更新/重新爬取
@@ -159,7 +159,8 @@ node skills/walmart-api-docs/scripts/crawl.mjs --proxy "socks5://localhost:1080"
 ## 输出文件结构
 
 ```
-output/
+~/crawl/walmart/
+├── walmart-api.db     # SQLite 数据库（含 FTS5 全文索引）
 ├── link-index.json    # 所有页面链接索引（slug + URL）
 ├── summary.json       # 汇总报告（统计 + 所有端点列表）
 ├── failed.json        # 失败列表（如有）

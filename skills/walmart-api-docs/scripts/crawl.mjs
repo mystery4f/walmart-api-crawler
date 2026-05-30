@@ -32,8 +32,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 
 // ── 路径 ──────────────────────────────────────────────
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..");
-const DEFAULT_OUTPUT = path.join(PROJECT_ROOT, "output");
+const DEFAULT_OUTPUT = path.join(os.homedir(), "crawl", "walmart");
 
 // ── 配置 ──────────────────────────────────────────────
 const BASE_URL = "https://developer.walmart.com";
