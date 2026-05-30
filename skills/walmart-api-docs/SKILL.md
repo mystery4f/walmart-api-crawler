@@ -7,7 +7,7 @@ description: 搜索和更新 Walmart Marketplace API 文档。当用户询问 Wa
 
 管理 Walmart 开发者文档的爬取、搜索和查阅。
 
-数据目录: `output/`（项目根目录，脚本自动定位，不依赖当前工作目录）
+数据目录: `./output`（相对于当前工作目录）
 
 ## 前置条件
 
@@ -25,7 +25,7 @@ npm install
 | 构建数据库 | `skills/walmart-api-docs/scripts/build-db.mjs` |
 | 搜索文档 | `skills/walmart-api-docs/scripts/search.mjs` |
 
-路径均相对于项目根目录。脚本通过 `__dirname` 自动定位项目根目录，在任何目录下执行均可正确找到 `output/`。
+路径均相对于项目根目录。安装为 pi package 后，脚本在 package 根目录下执行。
 
 ## SQLite 数据库（搜索加速）
 
