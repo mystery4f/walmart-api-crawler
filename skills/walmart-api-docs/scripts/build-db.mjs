@@ -18,7 +18,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_OUTPUT = path.resolve(process.cwd(), "output");
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..");
+const DEFAULT_OUTPUT = path.join(PROJECT_ROOT, "output");
 
 // ── 参数解析 ──────────────────────────────────────────
 function parseArgs(argv) {

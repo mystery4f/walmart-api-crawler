@@ -33,7 +33,8 @@ import { createRequire } from "node:module";
 const _require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_OUTPUT = path.resolve(process.cwd(), "output");
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..", "..");
+const DEFAULT_OUTPUT = path.join(PROJECT_ROOT, "output");
 
 // ── 参数解析 ──────────────────────────────────────────
 function parseArgs(argv) {
